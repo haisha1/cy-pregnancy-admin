@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: ${ADMIN_DB_URL}
+    username: ${ADMIN_DB_USERNAME}
+    password: ${ADMIN_DB_PASSWORD}
+  redis:
+    host: ${ADMIN_REDIS_HOST}
+app:
+  auth:
+    bootstrap-enabled: ${ADMIN_BOOTSTRAP_ENABLED:false}

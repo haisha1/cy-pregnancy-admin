@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="AdminServerApplication (local)" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.chunyu.pregnancy.admin.AdminServerApplication" />
+    <module name="cy-pregnancy-admin-server" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/server" />
+    <envs><env name="SPRING_PROFILES_ACTIVE" value="local" /></envs>
+    <method v="2"><option name="Make" enabled="true" /></method>
+  </configuration>
+</component>

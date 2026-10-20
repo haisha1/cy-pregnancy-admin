@@ -1,0 +1,17 @@
+spring:
+  config:
+    # 兼容IDEA从管理项目根目录或server目录启动；仅local导入，不影响prod必填密钥校验。
+    import:
+      - optional:file:./.local/application-secrets.properties
+      - optional:file:./server/.local/application-secrets.properties
+  datasource:
+    password: ${ADMIN_DB_PASSWORD:root}
+app:
+  auth:
+    # 只在local且账号表完全为空时创建首个安全管理员，密码由本机脚本随机生成。
+    bootstrap-enabled: true
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
