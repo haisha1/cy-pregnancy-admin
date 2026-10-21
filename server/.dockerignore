@@ -1,6 +1,3 @@
-target
-.git
-.idea
-.env
-.local
-*.log
+**
+!target/
+!target/cy-pregnancy-admin-server-0.1.0-SNAPSHOT.jar

@@ -2,6 +2,8 @@
 /.idea/
 *.iml
 /.env
+/.env.*
+!/.env.example
 /.local/
 *.log
 application-secrets.yml

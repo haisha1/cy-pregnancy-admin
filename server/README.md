@@ -1,5 +1,7 @@
 # 管理端后端 · Java 8
 
+生产部署见 [Jenkins + Docker](../../docs/DEPLOYMENT.md)。运行镜像只打包 Jenkins 已构建的 JAR，Compose 仅管理当前应用服务。
+
 独立项目：`D:/code/cy-pregnancy/cy-pregnancy-admin/server`。技术栈沿用用户已确认的Java 8、Spring Boot 2.7.18、MyBatis-Plus、MySQL、Redis、Flyway、Spring Security、JWT及springdoc，Maven版本由本机路径提供。
 
 管理端采用账号密码登录，密码存BCrypt散列；微信登录只属于小程序用户端，本工程不引入微信SDK。框架版本为兼容Java 8，Boot 2.7.18已结束开源维护，正式生产前需评审依赖维护或升级方案。[官方支持结束说明](https://spring.io/blog/2023/11/23/spring-boot-2-7-18-available-now/)
@@ -11,7 +13,7 @@
 - 四个预置角色和权限清单；独立审核、自审拦截；不设自动拥有所有权限的超级角色。
 - 知识条目与独立版本：创建/编辑草稿、送审、批准/拒绝、发布和下架；已送审内容不可改写。
 - 成功管理写操作与登录事件审计；UUID幂等、If-Match乐观锁、稳定游标分页。
-- 本机初始化/运行脚本、OpenAPI、Docker/Compose及Nginx参考配置。
+- 本机初始化/运行脚本、OpenAPI、Jenkins流水线及应用Compose配置。
 
 **管理Web及小程序只读内容链路已接通。** 发布只暴露当前审核版本，下架后重新读取不可见；不更改医学计算参数。模型/参考包、反馈、任务、数据删除监管、MFA及发布回滚仍待开发，能力接口明确为false。
 
@@ -82,7 +84,7 @@ Remove-Item Env:RUN_ADMIN_MYSQL_IT
 
 测试以root/root连接**专用测试库**，每次清理账号和内容测试夹具；代码先校验SELECT DATABASE()，禁止指向开发/生产库。Redis只写测试随机计数键，不执行FLUSHDB。实际测试结果与限制见[验证记录](docs/05-验证记录.md)。
 
-jar位于`target/cy-pregnancy-admin-server-0.1.0-SNAPSHOT.jar`。未在本机执行Docker构建或云端部署，生产配置步骤见[部署与后续事项](docs/04-部署与后续事项.md)。
+jar位于`target/cy-pregnancy-admin-server-0.1.0-SNAPSHOT.jar`。未在本机执行Docker构建或云端部署，生产配置步骤见[Jenkins 部署说明](../../docs/DEPLOYMENT.md)。
 
 ## 阅读顺序
 
