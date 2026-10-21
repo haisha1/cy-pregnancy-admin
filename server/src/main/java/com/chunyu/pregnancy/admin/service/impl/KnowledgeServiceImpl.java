@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 /** 知识状态机实现。业务状态变化、发布指针、幂等回执和成功审计在同一事务提交。 已送审内容不编辑；拒绝、撤回或已发布后，需要创建新的完整草稿版本。 */
+// 业务层组件：由 Spring 管理，负责组织业务步骤；事务边界仍需由事务代码明确控制。
 @Service
 public class KnowledgeServiceImpl implements KnowledgeService {
   private final KnowledgeArticleMapper articles;
@@ -25,6 +26,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
   private final AuditWriter audit;
   private final ObjectMapper json;
 
+  // 单一构造器由 Spring 自动注入依赖；final 字段表明这些依赖在构造后不再替换。
   public KnowledgeServiceImpl(
       KnowledgeArticleMapper articles,
       KnowledgeVersionMapper versions,
@@ -41,6 +43,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
   }
 
   @Override
+  // 游标分页按 ID 倒序；多查一条判断是否还有下一页，不伪造总页数。
   public PageResponse<KnowledgeSummaryResponse> list(Long beforeId, int limit) {
     checkLimit(limit);
     List<KnowledgeArticle> rows =
@@ -116,6 +119,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
   }
 
   @Override
+  // 在同一写事务中建立条目身份和首个草稿，避免只保存一半。
   public MutationResponse create(Long actor, String key, CreateArticleRequest request) {
     CommandExecutor.validateUuid(request.clientUuid);
     CommandExecutor.validateUuid(request.versionUuid);
@@ -149,6 +153,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
   }
 
   @Override
+  // 保留原版本，创建新的完整草稿；历史审核和已发布正文不会被就地覆盖。
   public MutationResponse newVersion(
       Long actor, String articleUuid, long expected, String key, NewVersionRequest request) {
     CommandExecutor.validateUuid(request.clientUuid);
@@ -197,6 +202,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
   }
 
   @Override
+  // 只允许作者提交自己的草稿，并在进入 submitted 状态前检查来源依据。
   public MutationResponse submit(Long actor, String uuid, long expected, String key) {
     return commands.execute(
         actor,
@@ -217,6 +223,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
   }
 
   @Override
+  // 只有 submitted 版本可审核；比较作者 ID，明确禁止给自己的稿件审核。
   public MutationResponse review(
       Long actor, String uuid, long expected, String key, ReviewRequest request) {
     return commands.execute(
@@ -242,6 +249,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
   }
 
   @Override
+  // 通过独立审核后才能发布；将条目的当前发布指针切到此版本，用户侧只读链路跟随该指针。
   public MutationResponse publish(Long actor, String uuid, long expected, String key) {
     return commands.execute(
         actor,
@@ -262,6 +270,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
           version.setPublisherId(actor);
           version.setPublishedAt(Instant.now());
           bump(version);
+          // published 状态记录版本历史；这条指针才决定哪一版是当前对外可见的内容。
           article.setPublishedVersionId(version.getId());
           article.setRevision(article.getRevision() + 1);
           articles.updateById(article);
@@ -271,6 +280,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
   }
 
   @Override
+  // 清空条目的当前发布指针，并保留版本与审计历史，不把下架等同于物理删除。
   public MutationResponse withdraw(Long actor, String articleUuid, long expected, String key) {
     return commands.execute(
         actor,

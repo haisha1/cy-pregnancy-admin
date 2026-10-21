@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /** 最小用户数据经内部HTTP读取，不跨库读取健康数据。任何外部服务失败均显式返回不可用。 */
+// 业务层组件：由 Spring 管理，负责组织业务步骤；事务边界仍需由事务代码明确控制。
 @Service
 public class AdminReadServiceImpl implements AdminReadService {
   private final AdminReadMapper data;
@@ -29,6 +30,7 @@ public class AdminReadServiceImpl implements AdminReadService {
   @Value("${app.user-read.key:}")
   private String userKey;
 
+  // 单一构造器由 Spring 自动注入依赖；final 字段表明这些依赖在构造后不再替换。
   public AdminReadServiceImpl(
       AdminReadMapper data, AdminAccessMapper access, StringRedisTemplate redis) {
     this.data = data;

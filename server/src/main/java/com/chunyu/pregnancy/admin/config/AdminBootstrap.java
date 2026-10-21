@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /** 仅在显式启用且账号表完全为空时创建首位安全管理员。没有固定密码，不打印密码。 账号表非空后不更新密码或角色，重启不能变成恢复被禁用账号的后门。 */
+// 通用 Spring 组件：由容器创建并管理，其他类可通过构造器使用它。
 @Component
 public class AdminBootstrap implements ApplicationRunner {
   private final AdminAuthProperties properties;
@@ -44,6 +45,7 @@ public class AdminBootstrap implements ApplicationRunner {
     transactions.executeWithoutResult(
         status -> {
           access.lockWrites();
+          // 仅用于首次空库引导：已有任意账号就跳过，不因重启而重置密码或提升角色。
           if (operators.selectCount(null) != 0) {
             return;
           }

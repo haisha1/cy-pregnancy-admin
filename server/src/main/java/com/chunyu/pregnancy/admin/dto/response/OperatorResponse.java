@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /** 独立公开DTO，绝不返回passwordHash。 */
+// Lombok 在编译期生成 getter；IDE 需要启用注解处理，运行时不靠反射生成方法。
 @Getter
 @AllArgsConstructor
 public class OperatorResponse {

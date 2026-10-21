@@ -5,14 +5,18 @@ import javax.validation.constraints.*;
 
 /** 修改账号状态和角色，服务端同时校验最后一名安全管理员保护。 */
 public class UpdateOperatorRequest {
+  // 要求文本非 null 且不能全是空白字符，用于必填文本。
   @NotBlank
+  // 限制非 null 文本的长度或集合大小；是否必填还需配合 NotNull、NotBlank 等约束。
   @Size(max = 64)
   public String displayName;
 
   @NotBlank
+  // 要求非 null 文本匹配指定正则；用户名、状态值等只接受约定格式。
   @Pattern(regexp = "active|disabled")
   public String state;
 
+  // 要求值不能为 null；它本身不限制字符串是否为空或集合是否为空。
   @NotNull
   @Size(min = 1, max = 4)
   public List<@NotBlank String> roleCodes;

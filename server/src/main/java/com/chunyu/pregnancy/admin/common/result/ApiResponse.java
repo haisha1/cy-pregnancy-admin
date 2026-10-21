@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.slf4j.MDC;
 
 /** 所有业务接口的统一响应。requestId 用来排查问题，不需要在日志中记录健康请求体。 */
+// Lombok 在编译期生成 getter；IDE 需要启用注解处理，运行时不靠反射生成方法。
 @Getter
 public class ApiResponse<T> {
   private final String code;

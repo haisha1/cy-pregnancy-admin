@@ -8,6 +8,7 @@ import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 
 /** 管理JWT只声明身份和会话，不把权限塞入长期凭据，避免角色变更后旧权限继续有效。 */
+// 业务层组件：由 Spring 管理，负责组织业务步骤；事务边界仍需由事务代码明确控制。
 @Service
 public class AdminTokenService {
   private final JwtEncoder encoder;

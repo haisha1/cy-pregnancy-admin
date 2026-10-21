@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 /** 已发布只读投影：只跟随article的当前指针，不按客户端给的版本号读取历史。下架立即不可读，不缓存正文。 */
+// 业务层组件：由 Spring 管理，负责组织业务步骤；事务边界仍需由事务代码明确控制。
 @Service
 public class PublishedKnowledgeService {
   private final JdbcTemplate db;
@@ -20,6 +21,7 @@ public class PublishedKnowledgeService {
   private static final String FIELDS =
       "a.id cursorId,a.client_uuid uuid,a.slug,v.client_uuid versionUuid,v.version_no versionNo,v.title,v.category,v.published_at publishedAt";
 
+  // 单一构造器由 Spring 自动注入依赖；final 字段表明这些依赖在构造后不再替换。
   public PublishedKnowledgeService(DataSource source, ObjectMapper json) {
     db = new JdbcTemplate(source);
     db.setQueryTimeout(3);

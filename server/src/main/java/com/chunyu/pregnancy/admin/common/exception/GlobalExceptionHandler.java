@@ -10,10 +10,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /** MVC 层错误处理；Spring Security 过滤器层的错误在 SecurityConfig 单独输出。 */
+// 集中处理 Controller 抛出的异常并生成统一响应；安全过滤器异常另行处理。
 @RestControllerAdvice
 public class GlobalExceptionHandler {
   private static final Logger LOG = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+  // 指定此方法处理的异常类型，将预期失败转换成对应 HTTP 状态和错误包体。
   @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
   public ResponseEntity<ApiResponse<Void>> forbidden(
       org.springframework.security.access.AccessDeniedException ex) {

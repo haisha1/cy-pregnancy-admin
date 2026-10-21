@@ -6,7 +6,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 /** 带明确条目、内容版本与乐观锁的知识详情；没有公开永久下载地址。 */
+// Lombok 在编译期生成 getter；IDE 需要启用注解处理，运行时不靠反射生成方法。
 @Getter
+// Lombok 在编译期生成 setter，减少字段赋值方法的重复代码。
 @Setter
 public class KnowledgeResponse {
   private String articleUuid;

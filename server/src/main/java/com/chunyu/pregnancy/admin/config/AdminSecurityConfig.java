@@ -23,9 +23,12 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthen
 import org.springframework.security.web.SecurityFilterChain;
 
 /** 管理鉴权与小程序独立：issuer/audience/kind均校验，密码只存BCrypt散列。 无Cookie认证，因此关闭CSRF和HTTP Session；未开放任意来源CORS。 */
+// 配置类：集中声明需要交给 Spring 管理的对象及框架行为。
 @Configuration
+// 启用方法级权限注解，才能执行 Controller 上的 PreAuthorize 权限检查。
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class AdminSecurityConfig {
+  // 把方法返回的对象注册为 Spring Bean；参数中的依赖由 Spring 从容器中提供。
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder(10);

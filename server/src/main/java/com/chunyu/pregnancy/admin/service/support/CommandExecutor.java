@@ -20,6 +20,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  * 管理写入统一事务入口：锁定写窗口 → 复核当前权限 → 幂等比较 → 业务写入/审计 → 保存回执。 锁跨进程生效，避免多个Docker实例重复写。初期管理流量小，优先保持逻辑清晰。
  * 这里绝不保存请求全文，密码等请求只留下带服务端密钥的HMAC摘要。
  */
+// 通用 Spring 组件：由容器创建并管理，其他类可通过构造器使用它。
 @Component
 public class CommandExecutor {
   private final TransactionTemplate transactions;
@@ -29,6 +30,7 @@ public class CommandExecutor {
   private final ObjectMapper json;
   private final AdminAuthProperties properties;
 
+  // 单一构造器由 Spring 自动注入依赖；final 字段表明这些依赖在构造后不再替换。
   public CommandExecutor(
       TransactionTemplate transactions,
       AdminAccessMapper access,
@@ -55,9 +57,12 @@ public class CommandExecutor {
       Object payload,
       Supplier<MutationResponse> command) {
     validateUuid(operationUuid);
+    // 相同幂等 key 只能对应相同请求内容；计算摘要而不保存原始密码或正文。
     String hash = fingerprint(payload);
+    // 业务变更、成功审计和幂等回执在一个事务内提交，任一步失败都不能留下部分成功状态。
     return transactions.execute(
         status -> {
+          // 这是数据库行锁，不是 Java synchronized；不同 JVM/容器也必须排队进入管理写窗口。
           access.lockWrites();
           AdminOperator actor = operators.selectById(actorId);
           if (actor == null
@@ -65,6 +70,7 @@ public class CommandExecutor {
               || access.activeSession(actorId, CurrentOperator.sessionUuid()) != 1) {
             throw new BizException(401, "AUTH_EXPIRED", "账号会话已失效");
           }
+          // 持锁后复核权限，避免入口鉴权后、实际写入前权限已被另一请求撤销。
           if (permission != null && !access.permissions(actorId).contains(permission)) {
             throw new BizException(403, "FORBIDDEN", "没有执行此操作的权限");
           }
@@ -74,12 +80,14 @@ public class CommandExecutor {
                       .eq(IdempotencyRecord::getActorId, actorId)
                       .eq(IdempotencyRecord::getCommandScope, scope)
                       .eq(IdempotencyRecord::getOperationUuid, operationUuid));
+          // 网络超时后客户端可能重试；命中相同操作时直接恢复原回执，不能再执行一次业务写入。
           if (previous != null) {
             if (!previous.getPayloadHash().equals(hash)) {
               throw new BizException(409, "IDEMPOTENCY_KEY_REUSED", "同一操作标识不能用于不同内容");
             }
             return decode(previous.getResponseJson());
           }
+          // Supplier 是由具体 Service 传入的业务回调；此时仍在上面的事务和写锁范围内执行。
           MutationResponse response = command.get();
           IdempotencyRecord record = new IdempotencyRecord();
           record.setActorId(actorId);
@@ -100,12 +108,14 @@ public class CommandExecutor {
     }
   }
 
+  // 乐观锁检查：客户端携带的版本必须等于数据库当前版本，不一致返回 409，避免旧页面覆盖新数据。
   public static void requireRevision(long current, long expected) {
     if (current != expected) {
       throw new BizException(409, "REVISION_CONFLICT", "资源已更新，请刷新后再操作");
     }
   }
 
+  // 先将请求按稳定顺序序列化，再用 HMAC 生成摘要；这是比较请求是否相同，不是保存可还原的请求。
   private String fingerprint(Object payload) {
     try {
       Mac mac = Mac.getInstance("HmacSHA256");

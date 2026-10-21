@@ -8,6 +8,7 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Component;
 
 /** 原子窗口限流。连接IP和账号分别计数，Redis故障时拒绝登录，不静默放开保护。 */
+// 通用 Spring 组件：由容器创建并管理，其他类可通过构造器使用它。
 @Component
 public class AdminLoginRateLimiter {
   private final StringRedisTemplate redis;

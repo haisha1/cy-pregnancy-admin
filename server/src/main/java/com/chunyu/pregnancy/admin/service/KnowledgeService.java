@@ -3,7 +3,7 @@ package com.chunyu.pregnancy.admin.service;
 import com.chunyu.pregnancy.admin.dto.request.*;
 import com.chunyu.pregnancy.admin.dto.response.*;
 
-/** 知识管理契约。发布只作用于管理库，用户端消费已发布版本的服务链路后续单独接入。 */
+/** 知识管理契约。负责管理库中的版本状态和发布指针，用户服务通过独立内部只读接口消费当前发布内容。 */
 public interface KnowledgeService {
   PageResponse<KnowledgeSummaryResponse> list(Long beforeId, int limit);
 

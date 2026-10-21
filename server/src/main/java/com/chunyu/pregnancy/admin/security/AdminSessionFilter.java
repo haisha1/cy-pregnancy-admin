@@ -35,8 +35,10 @@ public class AdminSessionFilter extends OncePerRequestFilter {
     if (authentication instanceof JwtAuthenticationToken) {
       Jwt jwt = ((JwtAuthenticationToken) authentication).getToken();
       try {
+        // 权限从数据库会话服务实时读取，不依赖长期 JWT 里可能过期的角色信息。
         List<String> permissions =
             sessions.permissions(Long.valueOf(jwt.getSubject()), jwt.getClaimAsString("sid"));
+        // 把权限码转换为 Spring Security 的 authority，供下游 PreAuthorize 检查。
         SecurityContextHolder.getContext()
             .setAuthentication(
                 new JwtAuthenticationToken(
@@ -55,6 +57,7 @@ public class AdminSessionFilter extends OncePerRequestFilter {
         return;
       }
     }
+    // 身份及会话检查通过后继续执行；前面的错误分支已写入响应并返回，不再进入业务接口。
     chain.doFilter(request, response);
   }
 

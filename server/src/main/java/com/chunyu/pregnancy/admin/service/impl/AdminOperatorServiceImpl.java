@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /** 账号业务实现：角色白名单、乐观锁和最后一名安全管理员保护均在事务写锁内执行。 */
+// 业务层组件：由 Spring 管理，负责组织业务步骤；事务边界仍需由事务代码明确控制。
 @Service
 public class AdminOperatorServiceImpl implements AdminOperatorService {
   private final AdminOperatorMapper operators;
@@ -23,6 +24,7 @@ public class AdminOperatorServiceImpl implements AdminOperatorService {
   private final PasswordEncoder passwords;
   private final AuditWriter audit;
 
+  // 单一构造器由 Spring 自动注入依赖；final 字段表明这些依赖在构造后不再替换。
   public AdminOperatorServiceImpl(
       AdminOperatorMapper operators,
       AdminAccessMapper access,
@@ -63,6 +65,7 @@ public class AdminOperatorServiceImpl implements AdminOperatorService {
   }
 
   @Override
+  // 校验角色白名单和密码规则，生成 BCrypt 散列，再在统一写事务中创建账号及角色关联。
   public MutationResponse create(Long actorId, String key, CreateOperatorRequest request) {
     CommandExecutor.validateUuid(request.clientUuid);
     PasswordPolicy.validate(request.password);
@@ -99,6 +102,7 @@ public class AdminOperatorServiceImpl implements AdminOperatorService {
   }
 
   @Override
+  // 修改状态/角色前保护最后一名可用安全管理员；成功后撤销目标账号旧会话。
   public MutationResponse update(
       Long actorId, String uuid, long expected, String key, UpdateOperatorRequest request) {
     return commands.execute(
@@ -132,6 +136,7 @@ public class AdminOperatorServiceImpl implements AdminOperatorService {
   }
 
   @Override
+  // 管理员重置目标密码，不需要知道原密码；更新后撤销目标账号全部会话。
   public MutationResponse resetPassword(
       Long actorId, String uuid, long expected, String key, ResetPasswordRequest request) {
     PasswordPolicy.validate(request.password);

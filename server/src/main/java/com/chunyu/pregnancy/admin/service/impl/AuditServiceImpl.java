@@ -11,10 +11,12 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 /** 审计采用ID游标倒序，查询不会扫描/返回业务正文、密码或凭据。 */
+// 业务层组件：由 Spring 管理，负责组织业务步骤；事务边界仍需由事务代码明确控制。
 @Service
 public class AuditServiceImpl implements AuditService {
   private final AuditEventMapper events;
 
+  // 单一构造器由 Spring 自动注入依赖；final 字段表明这些依赖在构造后不再替换。
   public AuditServiceImpl(AuditEventMapper events) {
     this.events = events;
   }

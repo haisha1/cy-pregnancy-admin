@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /** 密码校验、可撤销会话和本人改密。密码散列计算放在写锁之前，减少全局锁持有时间。 */
+// 业务层组件：由 Spring 管理，负责组织业务步骤；事务边界仍需由事务代码明确控制。
 @Service
 public class AdminAuthServiceImpl implements AdminAuthService {
   private final AdminOperatorMapper operators;
@@ -30,6 +31,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
   private final AuditWriter audit;
   private final String dummyHash;
 
+  // 单一构造器由 Spring 自动注入依赖；final 字段表明这些依赖在构造后不再替换。
   public AdminAuthServiceImpl(
       AdminOperatorMapper operators,
       AdminSessionMapper sessions,
@@ -53,6 +55,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
   }
 
   @Override
+  // 先做 BCrypt 密码匹配，再持锁复核账号状态和密码是否变化，最后建立管理会话并记录审计。
   public TokenResponse login(LoginRequest request) {
     AdminOperator found =
         operators.selectOne(
@@ -68,6 +71,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     return transactions.execute(
         status -> {
           access.lockWrites();
+          // 密码计算在事务外；持锁后重新查一次，防止计算期间账号已被禁用或密码已被重置。
           AdminOperator current = operators.selectById(found.getId());
           if (!"active".equals(current.getState())
               || !current.getPasswordHash().equals(found.getPasswordHash())) {
@@ -88,6 +92,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
   }
 
   @Override
+  // 实时读取当前角色和权限，不将浏览器缓存的权限当成服务端授权依据。
   public MeResponse me(Long actorId) {
     AdminOperator operator = operators.selectById(actorId);
     if (operator == null || !"active".equals(operator.getState())) {
@@ -114,6 +119,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
   }
 
   @Override
+  // 验证新密码和旧密码、检查 revision，更新散列后撤销全部旧会话，要求重新登录。
   public MutationResponse changePassword(
       Long actorId, long expected, String operationUuid, ChangePasswordRequest request) {
     PasswordPolicy.validate(request.newPassword);

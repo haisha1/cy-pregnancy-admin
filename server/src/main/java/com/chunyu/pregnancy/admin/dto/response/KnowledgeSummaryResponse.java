@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /** 列表仅返回摘要，避免分页时批量加载全部双表达正文。 */
+// Lombok 在编译期生成 getter；IDE 需要启用注解处理，运行时不靠反射生成方法。
 @Getter
 @AllArgsConstructor
 public class KnowledgeSummaryResponse {
