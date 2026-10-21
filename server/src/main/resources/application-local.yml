@@ -1,9 +1,12 @@
+# local：默认本机 MySQL 3306 / Redis 6379；可在 .local/connections-local.properties 单独覆盖连接参数。
 spring:
   config:
     # 兼容IDEA从管理项目根目录或server目录启动；仅local导入，不影响prod必填密钥校验。
     import:
       - optional:file:./.local/application-secrets.properties
       - optional:file:./server/.local/application-secrets.properties
+      - optional:file:./.local/connections-local.properties
+      - optional:file:./server/.local/connections-local.properties
   datasource:
     password: ${ADMIN_DB_PASSWORD:root}
 app:

@@ -1,0 +1,14 @@
+# 复制到 .local/connections-remote.properties；仅 remote profile 读取。
+# 本机 SSH 转发 23306 -> 服务器 13306 -> MySQL 容器 3306。
+# 本机 SSH 转发 26379 -> 服务器 16379 -> Redis 容器 6379。
+# 填写已创建的业务账号密码，不填 MySQL root 密码。
+ADMIN_DB_URL=jdbc:mysql://127.0.0.1:23306/cy_pregnancy_admin?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+ADMIN_DB_USERNAME=pregnancy_admin
+ADMIN_DB_PASSWORD=
+ADMIN_REDIS_HOST=127.0.0.1
+ADMIN_REDIS_PORT=26379
+ADMIN_REDIS_PASSWORD=
+# 若需要与线上服务联调，在此填写对应环境的服务间密钥。
+# 未填写时使用本机生成的独立密钥，不会自动读取 Jenkins 生产凭据。
+# ADMIN_READ_KEY=
+# CONTENT_READ_KEY=

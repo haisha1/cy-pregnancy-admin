@@ -1,0 +1,33 @@
+# remote：本地 Java 调试连接远程依赖；与 Jenkins prod 独立。
+# 先建立 SSH 隧道，再填写 Git 忽略的 .local/connections-remote.properties。
+# JDBC 与 Redis 地址必须显式配置，避免误回退到本机 root 账号。
+spring:
+  config:
+    import:
+      - optional:file:./.local/application-secrets.properties
+      - optional:file:./.local/connections-remote.properties
+      - optional:file:./server/.local/application-secrets.properties
+      - optional:file:./server/.local/connections-remote.properties
+  datasource:
+    url: ${ADMIN_DB_URL}
+    username: ${ADMIN_DB_USERNAME}
+    password: ${ADMIN_DB_PASSWORD}
+  redis:
+    host: ${ADMIN_REDIS_HOST}
+    port: ${ADMIN_REDIS_PORT}
+    password: ${ADMIN_REDIS_PASSWORD}
+  flyway:
+    # 本地连接线上库时不执行结构迁移；结构变更只由 Jenkins prod 发布。
+    enabled: false
+server:
+  # 调试服务仅绑定本机，不能将连接线上数据的开发入口暴露公网。
+  address: 127.0.0.1
+app:
+  auth:
+    # 连接已有远程库时，绝不创建初始管理员。
+    bootstrap-enabled: false
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

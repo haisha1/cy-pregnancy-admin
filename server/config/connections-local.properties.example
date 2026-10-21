@@ -1,0 +1,8 @@
+# 复制到 .local/connections-local.properties；仅 local profile 读取。
+# 密码示例仅用于本机开发，不上传服务器。
+ADMIN_DB_URL=jdbc:mysql://127.0.0.1:3306/cy_pregnancy_admin?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+ADMIN_DB_USERNAME=root
+ADMIN_DB_PASSWORD=root
+ADMIN_REDIS_HOST=127.0.0.1
+ADMIN_REDIS_PORT=6379
+ADMIN_REDIS_PASSWORD=

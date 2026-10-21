@@ -1,3 +1,5 @@
+# 基础配置。local=本地依赖；remote=本机经 SSH 访问远程依赖；prod=Jenkins 容器部署。
+# 连接覆盖写入 .local/connections-*.properties，生产配置使用 Jenkins Secret file。
 spring:
   application:
     name: cy-pregnancy-admin-server
